@@ -11,7 +11,7 @@
     button:hover { background: #45a049; }
     table { width: 100%; margin-top: 20px; border-collapse: collapse; }
     td, th { border: 1px solid #555; padding: 6px; }
-    input { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
+    input, select { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
   </style>
 </head>
 <body>
@@ -42,12 +42,23 @@
   <!-- === Viewer === -->
   <div id="viewer" class="menu hidden">
     <h3>Shipment Viewer</h3>
+
+    <label for="sortSelect">Sort By:</label>
+    <select id="sortSelect" onchange="renderViewer()">
+      <option value="none">-- None --</option>
+      <option value="ploc">Pickup Location</option>
+      <option value="dloc">Drop Off Location</option>
+      <option value="dloc_ploc">Drop Off → Pickup</option>
+      <option value="ploc_dloc">Pickup → Drop Off</option>
+    </select>
+
     <table>
       <thead>
         <tr><th>Pickup Location</th><th>Item Type</th><th>Drop Off Location</th></tr>
       </thead>
       <tbody id="viewerTable"></tbody>
     </table>
+
     <button onclick="renderViewer()">Reload</button>
     <button onclick="editShipment()">Edit Item</button>
     <button onclick="showMenu('mainMenu')">Menu</button>
@@ -130,11 +141,33 @@
     }
   }
 
+  // === Sorting ===
+  function sortShipments(data, criteria) {
+    return [...data].sort((a, b) => {
+      switch(criteria) {
+        case "ploc":
+          return a.ploc.localeCompare(b.ploc);
+        case "dloc":
+          return a.dloc.localeCompare(b.dloc);
+        case "dloc_ploc":
+          return a.dloc.localeCompare(b.dloc) || a.ploc.localeCompare(b.ploc);
+        case "ploc_dloc":
+          return a.ploc.localeCompare(b.ploc) || a.dloc.localeCompare(b.dloc);
+        default:
+          return 0;
+      }
+    });
+  }
+
   // === Viewer ===
   function renderViewer() {
     const tbody = document.getElementById("viewerTable");
     tbody.innerHTML = "";
-    shipments.forEach(s => {
+
+    const sortCriteria = document.getElementById("sortSelect").value;
+    const sortedShipments = sortShipments(shipments.slice(0, shipmentCount), sortCriteria);
+
+    sortedShipments.forEach(s => {
       tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`;
     });
     showMenu("viewer");
