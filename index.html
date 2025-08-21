@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Star Citizen Ship Calculator v0.1 (Web Version)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; }
+    .hidden { display: none; }
+    .menu { margin: 20px auto; max-width: 600px; padding: 20px; border: 2px solid #444; border-radius: 12px; background: #222; }
+    button { margin: 8px; padding: 10px 20px; font-size: 1rem; border-radius: 6px; border: none; cursor: pointer; background: #4caf50; color: white; }
+    button:hover { background: #45a049; }
+    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+    td, th { border: 1px solid #555; padding: 6px; }
+    input { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
+  </style>
+</head>
+<body>
+
+  <!-- === Main Menu === -->
+  <div id="mainMenu" class="menu">
+    <h2>Welcome to the Star Citizen Ship Calculator v0.1 (Web Version)</h2>
+    <button onclick="showMenu('startMenu')">Start</button>
+    <button onclick="showMenu('settingsMenu')">Settings</button>
+    <button onclick="renderViewer()">Viewer</button>
+  </div>
+
+  <!-- === Start Menu === -->
+  <div id="startMenu" class="menu hidden">
+    <h3>Enter Number of Shipments (max 10)</h3>
+    <input id="shipmentCount" type="number" min="1" max="10" />
+    <button onclick="beginShipments()">Confirm</button>
+    <button onclick="showMenu('mainMenu')">Back</button>
+  </div>
+
+  <!-- === Shipment Input Screen === -->
+  <div id="shipmentInput" class="menu hidden">
+    <h3 id="shipmentStepTitle"></h3>
+    <input id="shipmentInputField" type="text" placeholder="Enter value"/>
+    <button onclick="saveShipmentValue()">Save</button>
+  </div>
+
+  <!-- === Viewer === -->
+  <div id="viewer" class="menu hidden">
+    <h3>Shipment Viewer</h3>
+    <table>
+      <thead>
+        <tr><th>Pickup Location</th><th>Item Type</th><th>Drop Off Location</th></tr>
+      </thead>
+      <tbody id="viewerTable"></tbody>
+    </table>
+    <button onclick="renderViewer()">Reload</button>
+    <button onclick="editShipment()">Edit Item</button>
+    <button onclick="showMenu('mainMenu')">Menu</button>
+  </div>
+
+  <!-- === Settings Menu === -->
+  <div id="settingsMenu" class="menu hidden">
+    <h3>Settings</h3>
+    <p>Confirmation is currently <span id="confirmStatus">enabled</span></p>
+    <button onclick="toggleConfirm()">Toggle Confirmation</button>
+    <button onclick="showMenu('debuggerMenu')">Debugger</button>
+    <button onclick="showMenu('mainMenu')">Back</button>
+  </div>
+
+  <!-- === Debugger Menu === -->
+  <div id="debuggerMenu" class="menu hidden">
+    <h3>Debugger</h3>
+    <button onclick="setAllBurger()">Set All to BURGER</button>
+    <button onclick="resetAll()">Reset All</button>
+    <button onclick="showMenu('settingsMenu')">Back</button>
+  </div>
+
+<script>
+  // === Global State ===
+  let shipments = Array.from({length: 10}, () => ({ploc:"NONE", type:"NONE", dloc:"NONE"}));
+  let shipmentCount = 0;
+  let currentShipment = 0;
+  let currentField = "";
+  let confirmEnabled = true;
+
+  // === UI Navigation ===
+  function showMenu(id) {
+    document.querySelectorAll('.menu').forEach(m => m.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    updateConfirmStatus();
+  }
+
+  // === Start Flow ===
+  function beginShipments() {
+    const val = parseInt(document.getElementById("shipmentCount").value);
+    if (!val || val < 1 || val > 10) {
+      alert("Invalid number of shipments.");
+      return;
+    }
+    shipmentCount = val;
+    currentShipment = 0;
+    currentField = "ploc";
+    askNextField();
+  }
+
+  function askNextField() {
+    const fields = {ploc:"Pickup Location", type:"Item Type", dloc:"Drop-Off Location"};
+    document.getElementById("shipmentStepTitle").textContent =
+      `Shipment ${currentShipment+1} • ${fields[currentField]}`;
+    document.getElementById("shipmentInputField").value = "";
+    showMenu("shipmentInput");
+  }
+
+  function saveShipmentValue() {
+    let value = document.getElementById("shipmentInputField").value.trim();
+    if (!value) { alert("Please enter a value."); return; }
+
+    if (confirmEnabled) {
+      if (!confirm(`Is this correct? ${value}`)) return;
+    }
+
+    shipments[currentShipment][currentField] = value;
+
+    if (currentField === "ploc") currentField = "type";
+    else if (currentField === "type") currentField = "dloc";
+    else {
+      currentShipment++;
+      currentField = "ploc";
+    }
+
+    if (currentShipment < shipmentCount) {
+      askNextField();
+    } else {
+      renderViewer();
+    }
+  }
+
+  // === Viewer ===
+  function renderViewer() {
+    const tbody = document.getElementById("viewerTable");
+    tbody.innerHTML = "";
+    shipments.forEach(s => {
+      tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`;
+    });
+    showMenu("viewer");
+  }
+
+  function editShipment() {
+    const index = prompt("Enter shipment number (1-10):");
+    const idx = parseInt(index) - 1;
+    if (idx >= 0 && idx < 10) {
+      ["ploc","type","dloc"].forEach(field => {
+        let val = prompt(`Editing shipment ${idx+1} • ${field}`, shipments[idx][field]);
+        if (val && (!confirmEnabled || confirm(`Is this correct? ${val}`))) {
+          shipments[idx][field] = val;
+        }
+      });
+      renderViewer();
+    }
+  }
+
+  // === Settings / Debugger ===
+  function toggleConfirm() { confirmEnabled = !confirmEnabled; updateConfirmStatus(); }
+  function updateConfirmStatus() {
+    document.getElementById("confirmStatus").textContent = confirmEnabled ? "enabled" : "disabled";
+  }
+  function setAllBurger() {
+    shipments.forEach(s => s.ploc=s.type=s.dloc="BURGER");
+    renderViewer();
+  }
+  function resetAll() {
+    shipments.forEach(s => s.ploc=s.type=s.dloc="NONE");
+    renderViewer();
+  }
+
+  // Init
+  showMenu("mainMenu");
+</script>
+
+</body>
+</html>
