@@ -2,26 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Star Citizen Ship Calculator v0.1 (Web Version)</title>
+  <title>Star Citizen Tools</title>
   <style>
     body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; }
     .hidden { display: none; }
-    .menu { margin: 20px auto; max-width: 600px; padding: 20px; border: 2px solid #444; border-radius: 12px; background: #222; }
+    .menu { margin: 20px auto; max-width: 800px; padding: 20px; border: 2px solid #444; border-radius: 12px; background: #222; }
     button { margin: 8px; padding: 10px 20px; font-size: 1rem; border-radius: 6px; border: none; cursor: pointer; background: #4caf50; color: white; }
     button:hover { background: #45a049; }
+    input { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
+    select { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
     table { width: 100%; margin-top: 20px; border-collapse: collapse; }
     td, th { border: 1px solid #555; padding: 6px; }
-    input, select { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
+    pre { text-align: left; white-space: pre-wrap; }
   </style>
 </head>
 <body>
 
+  <!-- === Launcher Menu === -->
+  <div id="launcherMenu" class="menu">
+    <h2>Welcome to Star Citizen Tools</h2>
+    <p>Please select a program:</p>
+    <button onclick="showMenu('freightMainMenu')">SC Freight</button>
+    <button onclick="showMenu('calcMainMenu')">SC Calculator</button>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- === SC FREIGHT (Your previous shipment program) ====== -->
+  <!-- ===================================================== -->
+
   <!-- === Main Menu === -->
-  <div id="mainMenu" class="menu">
-    <h2>Welcome to the Star Citizen Ship Calculator v0.1 (Web Version)</h2>
+  <div id="freightMainMenu" class="menu hidden">
+    <h2>SC Freight</h2>
     <button onclick="showMenu('startMenu')">Start</button>
     <button onclick="showMenu('settingsMenu')">Settings</button>
     <button onclick="renderViewer()">Viewer</button>
+    <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
 
   <!-- === Start Menu === -->
@@ -29,7 +44,7 @@
     <h3>Enter Number of Shipments (max 10)</h3>
     <input id="shipmentCount" type="number" min="1" max="10" />
     <button onclick="beginShipments()">Confirm</button>
-    <button onclick="showMenu('mainMenu')">Back</button>
+    <button onclick="showMenu('freightMainMenu')">Back</button>
   </div>
 
   <!-- === Shipment Input Screen === -->
@@ -42,7 +57,6 @@
   <!-- === Viewer === -->
   <div id="viewer" class="menu hidden">
     <h3>Shipment Viewer</h3>
-
     <label for="sortSelect">Sort By:</label>
     <select id="sortSelect" onchange="renderViewer()">
       <option value="none">-- None --</option>
@@ -51,17 +65,15 @@
       <option value="dloc_ploc">Drop Off → Pickup</option>
       <option value="ploc_dloc">Pickup → Drop Off</option>
     </select>
-
     <table>
       <thead>
         <tr><th>Pickup Location</th><th>Item Type</th><th>Drop Off Location</th></tr>
       </thead>
       <tbody id="viewerTable"></tbody>
     </table>
-
     <button onclick="renderViewer()">Reload</button>
     <button onclick="editShipment()">Edit Item</button>
-    <button onclick="showMenu('mainMenu')">Menu</button>
+    <button onclick="showMenu('freightMainMenu')">Menu</button>
   </div>
 
   <!-- === Settings Menu === -->
@@ -70,7 +82,7 @@
     <p>Confirmation is currently <span id="confirmStatus">enabled</span></p>
     <button onclick="toggleConfirm()">Toggle Confirmation</button>
     <button onclick="showMenu('debuggerMenu')">Debugger</button>
-    <button onclick="showMenu('mainMenu')">Back</button>
+    <button onclick="showMenu('freightMainMenu')">Back</button>
   </div>
 
   <!-- === Debugger Menu === -->
@@ -81,22 +93,72 @@
     <button onclick="showMenu('settingsMenu')">Back</button>
   </div>
 
+  <!-- ===================================================== -->
+  <!-- === SC CALCULATOR (Converted Batch Script) ========== -->
+  <!-- ===================================================== -->
+
+  <!-- === Calculator Main Menu === -->
+  <div id="calcMainMenu" class="menu hidden">
+    <h2>SC Calculator</h2>
+    <p>Please select a function:</p>
+    <button onclick="showMenu('calc1')">1. Divide by Players</button>
+    <button onclick="showMenu('calc2')">2. Divide by Percentage + Players</button>
+    <button onclick="showMenu('calc3')">3. Divide by Players with Bank</button>
+    <button onclick="showMenu('launcherMenu')">Back</button>
+  </div>
+
+  <!-- === CALC 1 === -->
+  <div id="calc1" class="menu hidden">
+    <h3>Divide by Players</h3>
+    <input id="c1_total" type="number" placeholder="Enter Uaec Amount" />
+    <input id="c1_players" type="number" placeholder="Number of Players" />
+    <button onclick="doCalc1()">Calculate</button>
+    <pre id="c1_result"></pre>
+    <button onclick="showMenu('calcMainMenu')">Back</button>
+  </div>
+
+  <!-- === CALC 2 === -->
+  <div id="calc2" class="menu hidden">
+    <h3>Divide by Percentage + Players</h3>
+    <input id="c2_total" type="number" placeholder="Enter Uaec Amount" />
+    <input id="c2_players" type="number" placeholder="Number of Players" />
+    <button onclick="setupCalc2()">Next</button>
+    <div id="c2_inputs"></div>
+    <button onclick="doCalc2()">Calculate</button>
+    <pre id="c2_result"></pre>
+    <button onclick="showMenu('calcMainMenu')">Back</button>
+  </div>
+
+  <!-- === CALC 3 === -->
+  <div id="calc3" class="menu hidden">
+    <h3>Divide by Players with Bank</h3>
+    <input id="c3_total" type="number" placeholder="Enter Total Uaec" />
+    <input id="c3_tax" type="number" placeholder="Tax Percentage" />
+    <input id="c3_players" type="number" placeholder="Number of Players (excluding bank)" />
+    <label><input type="checkbox" id="c3_bankShare"> Bank Participates in Split</label><br>
+    <button onclick="doCalc3()">Calculate</button>
+    <pre id="c3_result"></pre>
+    <button onclick="showMenu('calcMainMenu')">Back</button>
+  </div>
+
 <script>
-  // === Global State ===
+  // === General Menu Handling ===
+  function showMenu(id) {
+    document.querySelectorAll('.menu').forEach(m => m.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    updateConfirmStatus?.();
+  }
+
+  // =====================================================
+  // === SC FREIGHT LOGIC ================================
+  // =====================================================
+
   let shipments = Array.from({length: 10}, () => ({ploc:"NONE", type:"NONE", dloc:"NONE"}));
   let shipmentCount = 0;
   let currentShipment = 0;
   let currentField = "";
   let confirmEnabled = true;
 
-  // === UI Navigation ===
-  function showMenu(id) {
-    document.querySelectorAll('.menu').forEach(m => m.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    updateConfirmStatus();
-  }
-
-  // === Start Flow ===
   function beginShipments() {
     const val = parseInt(document.getElementById("shipmentCount").value);
     if (!val || val < 1 || val > 10) {
@@ -141,33 +203,24 @@
     }
   }
 
-  // === Sorting ===
   function sortShipments(data, criteria) {
     return [...data].sort((a, b) => {
       switch(criteria) {
-        case "ploc":
-          return a.ploc.localeCompare(b.ploc);
-        case "dloc":
-          return a.dloc.localeCompare(b.dloc);
-        case "dloc_ploc":
-          return a.dloc.localeCompare(b.dloc) || a.ploc.localeCompare(b.ploc);
-        case "ploc_dloc":
-          return a.ploc.localeCompare(b.ploc) || a.dloc.localeCompare(b.dloc);
-        default:
-          return 0;
+        case "ploc": return a.ploc.localeCompare(b.ploc);
+        case "dloc": return a.dloc.localeCompare(b.dloc);
+        case "dloc_ploc": return a.dloc.localeCompare(b.dloc) || a.ploc.localeCompare(b.ploc);
+        case "ploc_dloc": return a.ploc.localeCompare(b.ploc) || a.dloc.localeCompare(b.dloc);
+        default: return 0;
       }
     });
   }
 
-  // === Viewer ===
   function renderViewer() {
     const tbody = document.getElementById("viewerTable");
     tbody.innerHTML = "";
-
     const sortCriteria = document.getElementById("sortSelect").value;
-    const sortedShipments = sortShipments(shipments.slice(0, shipmentCount), sortCriteria);
-
-    sortedShipments.forEach(s => {
+    const sorted = sortShipments(shipments.slice(0, shipmentCount), sortCriteria);
+    sorted.forEach(s => {
       tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`;
     });
     showMenu("viewer");
@@ -187,10 +240,10 @@
     }
   }
 
-  // === Settings / Debugger ===
   function toggleConfirm() { confirmEnabled = !confirmEnabled; updateConfirmStatus(); }
   function updateConfirmStatus() {
-    document.getElementById("confirmStatus").textContent = confirmEnabled ? "enabled" : "disabled";
+    const el = document.getElementById("confirmStatus");
+    if (el) el.textContent = confirmEnabled ? "enabled" : "disabled";
   }
   function setAllBurger() {
     shipments.forEach(s => s.ploc=s.type=s.dloc="BURGER");
@@ -201,8 +254,78 @@
     renderViewer();
   }
 
+  // =====================================================
+  // === SC CALCULATOR LOGIC =============================
+  // =====================================================
+
+  // Calc 1
+  function doCalc1() {
+    const number = parseInt(document.getElementById("c1_total").value);
+    const players = parseInt(document.getElementById("c1_players").value);
+    if (!number || !players) return alert("Invalid input");
+    const result = Math.floor(number / players);
+    document.getElementById("c1_result").textContent =
+      `${number} Uaec ÷ ${players} Players = ${result} Uaec each`;
+  }
+
+  // Calc 2
+  function setupCalc2() {
+    const total = parseInt(document.getElementById("c2_total").value);
+    const players = parseInt(document.getElementById("c2_players").value);
+    if (!total || !players) return alert("Invalid input");
+    const container = document.getElementById("c2_inputs");
+    container.innerHTML = "";
+    for (let i=1; i<=players; i++) {
+      container.innerHTML += `<input id="c2_p${i}" type="number" placeholder="Player ${i} %">`;
+    }
+  }
+
+  function doCalc2() {
+    const total = parseInt(document.getElementById("c2_total").value);
+    const players = parseInt(document.getElementById("c2_players").value);
+    let totalPercent = 0;
+    let outputs = "";
+    for (let i=1; i<=players; i++) {
+      const p = parseInt(document.getElementById(`c2_p${i}`).value) || 0;
+      totalPercent += p;
+      const amount = Math.floor(total * p / 100);
+      outputs += `Player ${i} gets: ${amount} Uaec (${p}%)\n`;
+    }
+    if (totalPercent > 100) {
+      outputs = "WARNING: Total Percentage Exceeds 100%!";
+    }
+    document.getElementById("c2_result").textContent = outputs;
+  }
+
+  // Calc 3
+  function doCalc3() {
+    const total = parseInt(document.getElementById("c3_total").value);
+    const taxRate = parseInt(document.getElementById("c3_tax").value);
+    const players = parseInt(document.getElementById("c3_players").value);
+    const bankShare = document.getElementById("c3_bankShare").checked;
+
+    if (!total || taxRate < 0 || players < 1) return alert("Invalid input");
+
+    const taxAmount = Math.floor(total * taxRate / 100);
+    const remaining = total - taxAmount;
+    const recipients = bankShare ? players + 1 : players;
+    const individual = Math.floor(remaining / recipients);
+    const leftover = remaining % recipients;
+    const bankTotal = bankShare ? taxAmount + individual : taxAmount;
+
+    document.getElementById("c3_result").textContent =
+      `===== Results =====\n` +
+      `Total Uaec: ${total}\n` +
+      `Uaec to Bank: ${taxAmount}\n` +
+      `Bank Total (Tax + Share): ${bankTotal}\n` +
+      `Remaining to Split: ${remaining}\n` +
+      `Total Recipients: ${recipients}\n` +
+      `Each Player Gets: ${individual}\n` +
+      `Leftover: ${leftover}`;
+  }
+
   // Init
-  showMenu("mainMenu");
+  showMenu("launcherMenu");
 </script>
 
 </body>
