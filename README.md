@@ -22,13 +22,7 @@ once you spend half your life inputting the numbers and letters it gives you a n
 
 **THINGS I WANT TO ADD**
 
-sort by deliver
-
-sort by pickup
-
-sort by deliver then by pickup
-
-other functions
+not sure yet
 
 ---
 
