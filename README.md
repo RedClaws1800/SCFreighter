@@ -1,3 +1,4 @@
+https://redclaws1800.github.io/SCFreighter/
 
 Disclaimer: this code is creacted by GPT-5
 
