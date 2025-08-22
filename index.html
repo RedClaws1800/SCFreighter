@@ -14,9 +14,17 @@
     table { width: 100%; margin-top: 20px; border-collapse: collapse; }
     td, th { border: 1px solid #555; padding: 6px; }
     pre { text-align: left; white-space: pre-wrap; }
+    /* GitHub button */
+    #githubBtn { position: fixed; top: 16px; right: 16px; z-index: 1000; width: 40px; height: 40px; background: #24292e; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    #githubBtn img { width: 24px; height: 24px; }
   </style>
 </head>
 <body>
+
+  <!-- GitHub Button -->
+  <a id="githubBtn" href="https://github.com/RedClaws1800/SCFreighter" target="_blank">
+    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
+  </a>
 
   <!-- === Launcher Menu === -->
   <div id="launcherMenu" class="menu">
@@ -26,11 +34,7 @@
     <button onclick="showMenu('calcMainMenu')">SC Calculator</button>
   </div>
 
-  <!-- ===================================================== -->
-  <!-- === SC FREIGHT (Your previous shipment program) ====== -->
-  <!-- ===================================================== -->
-
-  <!-- === Main Menu === -->
+  <!-- SC FREIGHT Menus -->
   <div id="freightMainMenu" class="menu hidden">
     <h2>SC Freight</h2>
     <button onclick="showMenu('startMenu')">Start</button>
@@ -39,7 +43,6 @@
     <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
 
-  <!-- === Start Menu === -->
   <div id="startMenu" class="menu hidden">
     <h3>Enter Number of Shipments (max 10)</h3>
     <input id="shipmentCount" type="number" min="1" max="10" />
@@ -47,14 +50,12 @@
     <button onclick="showMenu('freightMainMenu')">Back</button>
   </div>
 
-  <!-- === Shipment Input Screen === -->
   <div id="shipmentInput" class="menu hidden">
     <h3 id="shipmentStepTitle"></h3>
     <input id="shipmentInputField" type="text" placeholder="Enter value"/>
     <button onclick="saveShipmentValue()">Save</button>
   </div>
 
-  <!-- === Viewer === -->
   <div id="viewer" class="menu hidden">
     <h3>Shipment Viewer</h3>
     <label for="sortSelect">Sort By:</label>
@@ -76,7 +77,6 @@
     <button onclick="showMenu('freightMainMenu')">Menu</button>
   </div>
 
-  <!-- === Settings Menu === -->
   <div id="settingsMenu" class="menu hidden">
     <h3>Settings</h3>
     <p>Confirmation is currently <span id="confirmStatus">enabled</span></p>
@@ -85,7 +85,6 @@
     <button onclick="showMenu('freightMainMenu')">Back</button>
   </div>
 
-  <!-- === Debugger Menu === -->
   <div id="debuggerMenu" class="menu hidden">
     <h3>Debugger</h3>
     <button onclick="setAllBurger()">Set All to BURGER</button>
@@ -93,11 +92,7 @@
     <button onclick="showMenu('settingsMenu')">Back</button>
   </div>
 
-  <!-- ===================================================== -->
-  <!-- === SC CALCULATOR (Converted Batch Script) ========== -->
-  <!-- ===================================================== -->
-
-  <!-- === Calculator Main Menu === -->
+  <!-- SC CALCULATOR Menus -->
   <div id="calcMainMenu" class="menu hidden">
     <h2>SC Calculator</h2>
     <p>Please select a function:</p>
@@ -107,7 +102,6 @@
     <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
 
-  <!-- === CALC 1 === -->
   <div id="calc1" class="menu hidden">
     <h3>Divide by Players</h3>
     <input id="c1_total" type="number" placeholder="Enter Uaec Amount" />
@@ -117,7 +111,6 @@
     <button onclick="showMenu('calcMainMenu')">Back</button>
   </div>
 
-  <!-- === CALC 2 === -->
   <div id="calc2" class="menu hidden">
     <h3>Divide by Percentage + Players</h3>
     <input id="c2_total" type="number" placeholder="Enter Uaec Amount" />
@@ -129,7 +122,6 @@
     <button onclick="showMenu('calcMainMenu')">Back</button>
   </div>
 
-  <!-- === CALC 3 === -->
   <div id="calc3" class="menu hidden">
     <h3>Divide by Players with Bank</h3>
     <input id="c3_total" type="number" placeholder="Enter Total Uaec" />
@@ -149,10 +141,7 @@
     updateConfirmStatus?.();
   }
 
-  // =====================================================
-  // === SC FREIGHT LOGIC ================================
-  // =====================================================
-
+  // === SC FREIGHT LOGIC ===
   let shipments = Array.from({length: 10}, () => ({ploc:"NONE", type:"NONE", dloc:"NONE"}));
   let shipmentCount = 0;
   let currentShipment = 0;
@@ -161,14 +150,8 @@
 
   function beginShipments() {
     const val = parseInt(document.getElementById("shipmentCount").value);
-    if (!val || val < 1 || val > 10) {
-      alert("Invalid number of shipments.");
-      return;
-    }
-    shipmentCount = val;
-    currentShipment = 0;
-    currentField = "ploc";
-    askNextField();
+    if (!val || val < 1 || val > 10) return alert("Invalid number of shipments.");
+    shipmentCount = val; currentShipment = 0; currentField = "ploc"; askNextField();
   }
 
   function askNextField() {
@@ -182,34 +165,20 @@
   function saveShipmentValue() {
     let value = document.getElementById("shipmentInputField").value.trim();
     if (!value) { alert("Please enter a value."); return; }
-
-    if (confirmEnabled) {
-      if (!confirm(`Is this correct? ${value}`)) return;
-    }
-
+    if (confirmEnabled && !confirm(`Is this correct? ${value}`)) return;
     shipments[currentShipment][currentField] = value;
-
-    if (currentField === "ploc") currentField = "type";
-    else if (currentField === "type") currentField = "dloc";
-    else {
-      currentShipment++;
-      currentField = "ploc";
-    }
-
-    if (currentShipment < shipmentCount) {
-      askNextField();
-    } else {
-      renderViewer();
-    }
+    currentField = currentField === "ploc" ? "type" : currentField === "type" ? "dloc" : "ploc";
+    if (currentField === "ploc") currentShipment++;
+    if (currentShipment < shipmentCount) askNextField(); else renderViewer();
   }
 
   function sortShipments(data, criteria) {
-    return [...data].sort((a, b) => {
-      switch(criteria) {
+    return [...data].sort((a,b)=> {
+      switch(criteria){
         case "ploc": return a.ploc.localeCompare(b.ploc);
         case "dloc": return a.dloc.localeCompare(b.dloc);
-        case "dloc_ploc": return a.dloc.localeCompare(b.dloc) || a.ploc.localeCompare(b.ploc);
-        case "ploc_dloc": return a.ploc.localeCompare(b.ploc) || a.dloc.localeCompare(b.dloc);
+        case "dloc_ploc": return a.dloc.localeCompare(b.dloc)||a.ploc.localeCompare(b.ploc);
+        case "ploc_dloc": return a.ploc.localeCompare(b.ploc)||a.dloc.localeCompare(b.dloc);
         default: return 0;
       }
     });
@@ -219,112 +188,74 @@
     const tbody = document.getElementById("viewerTable");
     tbody.innerHTML = "";
     const sortCriteria = document.getElementById("sortSelect").value;
-    const sorted = sortShipments(shipments.slice(0, shipmentCount), sortCriteria);
-    sorted.forEach(s => {
-      tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`;
-    });
+    sortShipments(shipments.slice(0, shipmentCount), sortCriteria)
+      .forEach(s => tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`);
     showMenu("viewer");
   }
 
   function editShipment() {
-    const index = prompt("Enter shipment number (1-10):");
-    const idx = parseInt(index) - 1;
-    if (idx >= 0 && idx < 10) {
-      ["ploc","type","dloc"].forEach(field => {
-        let val = prompt(`Editing shipment ${idx+1} • ${field}`, shipments[idx][field]);
-        if (val && (!confirmEnabled || confirm(`Is this correct? ${val}`))) {
-          shipments[idx][field] = val;
-        }
+    const index = parseInt(prompt("Enter shipment number (1-10):"))-1;
+    if (index>=0 && index<10){
+      ["ploc","type","dloc"].forEach(field=>{
+        let val = prompt(`Editing shipment ${index+1} • ${field}`, shipments[index][field]);
+        if(val && (!confirmEnabled || confirm(`Is this correct? ${val}`))) shipments[index][field]=val;
       });
       renderViewer();
     }
   }
 
-  function toggleConfirm() { confirmEnabled = !confirmEnabled; updateConfirmStatus(); }
-  function updateConfirmStatus() {
-    const el = document.getElementById("confirmStatus");
-    if (el) el.textContent = confirmEnabled ? "enabled" : "disabled";
-  }
-  function setAllBurger() {
-    shipments.forEach(s => s.ploc=s.type=s.dloc="BURGER");
-    renderViewer();
-  }
-  function resetAll() {
-    shipments.forEach(s => s.ploc=s.type=s.dloc="NONE");
-    renderViewer();
-  }
+  function toggleConfirm(){ confirmEnabled=!confirmEnabled; updateConfirmStatus(); }
+  function updateConfirmStatus(){ const el=document.getElementById("confirmStatus"); if(el) el.textContent=confirmEnabled?"enabled":"disabled"; }
+  function setAllBurger(){ shipments.forEach(s=>s.ploc=s.type=s.dloc="BURGER"); renderViewer(); }
+  function resetAll(){ shipments.forEach(s=>s.ploc=s.type=s.dloc="NONE"); renderViewer(); }
 
-  // =====================================================
-  // === SC CALCULATOR LOGIC =============================
-  // =====================================================
-
-  // Calc 1
+  // === SC CALCULATOR LOGIC ===
   function doCalc1() {
-    const number = parseInt(document.getElementById("c1_total").value);
-    const players = parseInt(document.getElementById("c1_players").value);
-    if (!number || !players) return alert("Invalid input");
-    const result = Math.floor(number / players);
-    document.getElementById("c1_result").textContent =
-      `${number} Uaec ÷ ${players} Players = ${result} Uaec each`;
+    const number=parseInt(document.getElementById("c1_total").value);
+    const players=parseInt(document.getElementById("c1_players").value);
+    if(!number||!players) return alert("Invalid input");
+    document.getElementById("c1_result").textContent=`${number} Uaec ÷ ${players} Players = ${Math.floor(number/players)} Uaec each`;
   }
 
-  // Calc 2
   function setupCalc2() {
-    const total = parseInt(document.getElementById("c2_total").value);
-    const players = parseInt(document.getElementById("c2_players").value);
-    if (!total || !players) return alert("Invalid input");
-    const container = document.getElementById("c2_inputs");
-    container.innerHTML = "";
-    for (let i=1; i<=players; i++) {
-      container.innerHTML += `<input id="c2_p${i}" type="number" placeholder="Player ${i} %">`;
-    }
+    const total=parseInt(document.getElementById("c2_total").value);
+    const players=parseInt(document.getElementById("c2_players").value);
+    if(!total||!players) return alert("Invalid input");
+    const container=document.getElementById("c2_inputs");
+    container.innerHTML="";
+    for(let i=1;i<=players;i++) container.innerHTML+=`<input id="c2_p${i}" type="number" placeholder="Player ${i} %">`;
   }
 
   function doCalc2() {
-    const total = parseInt(document.getElementById("c2_total").value);
-    const players = parseInt(document.getElementById("c2_players").value);
-    let totalPercent = 0;
-    let outputs = "";
-    for (let i=1; i<=players; i++) {
-      const p = parseInt(document.getElementById(`c2_p${i}`).value) || 0;
-      totalPercent += p;
-      const amount = Math.floor(total * p / 100);
-      outputs += `Player ${i} gets: ${amount} Uaec (${p}%)\n`;
+    const total=parseInt(document.getElementById("c2_total").value);
+    const players=parseInt(document.getElementById("c2_players").value);
+    let totalPercent=0, outputs="";
+    for(let i=1;i<=players;i++){
+      const p=parseInt(document.getElementById(`c2_p${i}`).value)||0;
+      totalPercent+=p;
+      outputs+=`Player ${i} gets: ${Math.floor(total*p/100)} Uaec (${p}%)\n`;
     }
-    if (totalPercent > 100) {
-      outputs = "WARNING: Total Percentage Exceeds 100%!";
-    }
-    document.getElementById("c2_result").textContent = outputs;
+    if(totalPercent>100) outputs="WARNING: Total Percentage Exceeds 100%!";
+    document.getElementById("c2_result").textContent=outputs;
   }
 
-  // Calc 3
   function doCalc3() {
-    const total = parseInt(document.getElementById("c3_total").value);
-    const taxRate = parseInt(document.getElementById("c3_tax").value);
-    const players = parseInt(document.getElementById("c3_players").value);
-    const bankShare = document.getElementById("c3_bankShare").checked;
-
-    if (!total || taxRate < 0 || players < 1) return alert("Invalid input");
-
-    const taxAmount = Math.floor(total * taxRate / 100);
-    const remaining = total - taxAmount;
-    const recipients = bankShare ? players + 1 : players;
-    const individual = Math.floor(remaining / recipients);
-    const leftover = remaining % recipients;
-    const bankTotal = bankShare ? taxAmount + individual : taxAmount;
-
-    document.getElementById("c3_result").textContent =
-      `===== Results =====\n` +
-      `Total Uaec: ${total}\n` +
-      `Uaec to Bank: ${taxAmount}\n` +
-      `Bank Total (Tax + Share): ${bankTotal}\n` +
-      `Remaining to Split: ${remaining}\n` +
-      `Total Recipients: ${recipients}\n` +
-      `Each Player Gets: ${individual}\n` +
-      `Leftover: ${leftover}`;
+    const total=parseInt(document.getElementById("c3_total").value);
+    const taxRate=parseInt(document.getElementById("c3_tax").value);
+    const players=parseInt(document.getElementById("c3_players").value);
+    const bankShare=document.getElementById("c3_bankShare").checked;
+    if(!total||taxRate<0||players<1) return alert("Invalid input");
+    const taxAmount=Math.floor(total*taxRate/100);
+    const remaining=total-taxAmount;
+    const recipients=bankShare?players+1:players;
+    const individual=Math.floor(remaining/recipients);
+    const leftover=remaining%recipients;
+    const bankTotal=bankShare?taxAmount+individual:taxAmount;
+    document.getElementById("c3_result").textContent=
+      `===== Results =====\nTotal Uaec: ${total}\nUaec to Bank: ${taxAmount}\nBank Total (Tax + Share): ${bankTotal}\nRemaining to Split: ${remaining}\nTotal Recipients: ${recipients}\nEach Player Gets: ${individual}\nLeftover: ${leftover}`;
   }
 
-  // Init
+  // Initialize
   showMenu("launcherMenu");
 </script>
 
