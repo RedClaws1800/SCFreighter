@@ -11,6 +11,8 @@ Welcome to the file, I am new to this whole github thing so dont be mad, and the
 **UPDATE**
 v0.1 was uploaded on 8.21.25 to github and made accessable via github
 
+v0.2 Adds UI Updates, Quality Of Life Features
+
 ---
 
 **WHAT IS SCFRIGHT**
@@ -31,5 +33,17 @@ not sure yet
 v0.1.1: Added Sorting To Viewer
 
 v0.1.2: Added Calculator Function
+
+v0.2.0:
+Added Optional UAEc input
+Added Optional ID input (example: which bay you put it in on the caterpillar)
+Sort By Pickup Location, Delivery Location, Pickup Location -> Dropoff Location, Dropoff Location -> Pickup Location
+Enter Key Works as Save Button
+Unlimited Shipment Entries
+Massive UI Updates
+Color Picker
+Delete Shipments Button
+Clear Shipments Button
+Edit Shipments Button
 
 ---
