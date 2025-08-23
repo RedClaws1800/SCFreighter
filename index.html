@@ -1,263 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Star Citizen Tools</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; }
-    .hidden { display: none; }
-    .menu { margin: 20px auto; max-width: 800px; padding: 20px; border: 2px solid #444; border-radius: 12px; background: #222; }
-    button { margin: 8px; padding: 10px 20px; font-size: 1rem; border-radius: 6px; border: none; cursor: pointer; background: #4caf50; color: white; }
-    button:hover { background: #45a049; }
-    input { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
-    select { padding: 6px; margin: 6px; border-radius: 6px; border: 1px solid #666; }
-    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-    td, th { border: 1px solid #555; padding: 6px; }
-    pre { text-align: left; white-space: pre-wrap; }
-    /* GitHub button */
-    #githubBtn { position: fixed; top: 16px; right: 16px; z-index: 1000; width: 40px; height: 40px; background: #24292e; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-    #githubBtn img { width: 24px; height: 24px; }
-  </style>
+<meta charset="UTF-8" />
+<title>Star Citizen Tools</title>
+<style>
+  :root { --btn-bg: #000000; --btn-text: #ffffff; }
+  body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; }
+  .menu { margin: 50px auto; max-width: 1100px; padding: 20px; border: 2px solid #444; border-radius: 12px; background: #222; }
+  .hidden { display: none; }
+  button { margin: 6px; padding: 8px 16px; font-size: 0.95rem; border-radius: 8px; border: none; cursor: pointer; background: var(--btn-bg); color: var(--btn-text); }
+  button:hover { filter: brightness(0.9); }
+  button.danger { background: #b61f2f; }
+  button.secondary { background: #444; }
+  input, select { padding: 6px; margin: 4px; border-radius: 6px; border: 1px solid #666; background:#111; color:#eee; }
+  input[type="number"] { width: 140px; }
+  table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+  td, th { border: 1px solid #555; padding: 6px; text-align: center; }
+  .edit-input { width: 94%; }
+  .row-actions { display:flex; gap:6px; justify-content:center; }
+  .inline-note { font-size: 0.9rem; color: #ccc; margin-top: 6px; }
+  .inline-error { color:#ff8e8e; font-size:0.9rem; margin-top:6px; }
+  .inline-ok { color:#8effa3; font-size:0.9rem; margin-top:6px; }
+  .inline-confirm { margin-top: 10px; }
+  .stack { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .flex { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .left { text-align:left; }
+  #githubBtn { position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; background: #24292e; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  #githubBtn img { width: 24px; height: 24px; }
+</style>
 </head>
 <body>
+<a id="githubBtn" href="https://github.com/RedClaws1800/SCFreighter" target="_blank" aria-label="GitHub">
+  <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
+</a>
+<p id="fullscreenNote">Fullscreen (F11)</p>
 
-  <!-- GitHub Button -->
-  <a id="githubBtn" href="https://github.com/RedClaws1800/SCFreighter" target="_blank">
-    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
-  </a>
-
-  <!-- === Launcher Menu === -->
-  <div id="launcherMenu" class="menu">
-    <h2>Welcome to Star Citizen Tools</h2>
-    <p>Please select a program:</p>
+<!-- ===== Launcher (Main) ===== -->
+<div id="launcherMenu" class="menu">
+  <h2>Star Citizen Tools</h2>
+  <div class="flex">
     <button onclick="showMenu('freightMainMenu')">SC Freight</button>
     <button onclick="showMenu('calcMainMenu')">SC Calculator</button>
+    <button onclick="openMainSettings()">Main Settings</button>
   </div>
+</div>
 
-  <!-- SC FREIGHT Menus -->
-  <div id="freightMainMenu" class="menu hidden">
-    <h2>SC Freight</h2>
-    <button onclick="showMenu('startMenu')">Start</button>
-    <button onclick="showMenu('settingsMenu')">Settings</button>
-    <button onclick="renderViewer()">Viewer</button>
+<!-- ===== Main Settings (color picker) ===== -->
+<div id="mainSettingsMenu" class="menu hidden">
+  <h2>Main Settings</h2>
+  <div class="stack">
+    <div class="flex">
+      <label for="btnColor">Button Color:</label>
+      <input type="color" id="btnColor">
+      <button class="secondary" onclick="resetButtonColor()">Reset</button>
+    </div>
+    <p class="inline-note">This changes the color of all regular buttons. (Saved automatically.)</p>
+  </div>
+  <div class="flex" style="margin-top:12px;">
     <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
+</div>
 
-  <div id="startMenu" class="menu hidden">
-    <h3>Enter Number of Shipments (max 10)</h3>
-    <input id="shipmentCount" type="number" min="1" max="10" />
-    <button onclick="beginShipments()">Confirm</button>
-    <button onclick="showMenu('freightMainMenu')">Back</button>
+<!-- ===== Freight Menu ===== -->
+<div id="freightMainMenu" class="menu hidden">
+  <h2>SC Freight Menu</h2>
+  <div class="flex">
+    <button onclick="startShipments()">Start New</button>
+    <button onclick="renderViewer()">Viewer</button>
+    <button onclick="showMenu('settingsMenu')">Freight Settings</button>
+    <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
+</div>
 
-  <div id="shipmentInput" class="menu hidden">
-    <h3 id="shipmentStepTitle"></h3>
+<!-- ===== Shipment Input (step-by-step, with inline confirm if enabled) ===== -->
+<div id="shipmentInput" class="menu hidden">
+  <h3 id="shipmentStepTitle"></h3>
+  <div class="stack">
     <input id="shipmentInputField" type="text" placeholder="Enter value"/>
-    <button onclick="saveShipmentValue()">Save</button>
+    <div id="shipmentMsg" class="inline-error hidden"></div>
+    <div id="entryButtons" class="flex">
+      <button id="nextBtn" onclick="handleEntryNext()">Next</button>
+      <button class="secondary" onclick="renderViewer()">Viewer</button>
+    </div>
+    <div id="confirmBlock" class="inline-confirm hidden">
+      <p class="inline-note" id="confirmText"></p>
+      <div class="flex">
+        <button onclick="confirmEntry(true)">Yes</button>
+        <button class="secondary" onclick="confirmEntry(false)">No, edit</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <div id="viewer" class="menu hidden">
-    <h3>Shipment Viewer</h3>
+<!-- ===== Viewer (inline row editing, autosave, clear button) ===== -->
+<div id="viewer" class="menu hidden">
+  <h3>Shipment Viewer</h3>
+  <div class="flex">
     <label for="sortSelect">Sort By:</label>
     <select id="sortSelect" onchange="renderViewer()">
       <option value="none">-- None --</option>
       <option value="ploc">Pickup Location</option>
       <option value="dloc">Drop Off Location</option>
-      <option value="dloc_ploc">Drop Off → Pickup</option>
-      <option value="ploc_dloc">Pickup → Drop Off</option>
+      <option value="ploc_dloc">Pickup → Drop-off</option>
+      <option value="dloc_ploc">Drop-off → Pickup</option>
     </select>
-    <table>
-      <thead>
-        <tr><th>Pickup Location</th><th>Item Type</th><th>Drop Off Location</th></tr>
-      </thead>
-      <tbody id="viewerTable"></tbody>
-    </table>
-    <button onclick="renderViewer()">Reload</button>
-    <button onclick="editShipment()">Edit Item</button>
+    <button onclick="addNewShipment()">Add New Shipment</button>
+    <button class="danger" onclick="clearShipments()">Clear Shipments</button>
     <button onclick="showMenu('freightMainMenu')">Menu</button>
   </div>
+  <table>
+    <thead><tr id="viewerHead"></tr></thead>
+    <tbody id="viewerTable"></tbody>
+  </table>
+</div>
 
-  <div id="settingsMenu" class="menu hidden">
-    <h3>Settings</h3>
-    <p>Confirmation is currently <span id="confirmStatus">enabled</span></p>
-    <button onclick="toggleConfirm()">Toggle Confirmation</button>
-    <button onclick="showMenu('debuggerMenu')">Debugger</button>
+<!-- ===== Freight Settings ===== -->
+<div id="settingsMenu" class="menu hidden">
+  <h3>Freight Settings</h3>
+  <p>Item Type field is <span id="itemTypeStatus">enabled</span></p>
+  <button onclick="toggleItemType()">Toggle Item Type</button>
+  <p>UAEc field is <span id="uaecStatus">disabled</span></p>
+  <button onclick="toggleUAEc()">Toggle UAEc</button>
+  <p>TAG field is <span id="tagStatus">disabled</span></p>
+  <button onclick="toggleTag()">Toggle TAG</button>
+  <p>“Is input correct?” is <span id="confirmStatus">enabled</span></p>
+  <button onclick="toggleConfirm()">Toggle Confirmations</button>
+  <div class="flex" style="margin-top:12px;">
     <button onclick="showMenu('freightMainMenu')">Back</button>
   </div>
+</div>
 
-  <div id="debuggerMenu" class="menu hidden">
-    <h3>Debugger</h3>
-    <button onclick="setAllBurger()">Set All to BURGER</button>
-    <button onclick="resetAll()">Reset All</button>
-    <button onclick="showMenu('settingsMenu')">Back</button>
-  </div>
-
-  <!-- SC CALCULATOR Menus -->
-  <div id="calcMainMenu" class="menu hidden">
-    <h2>SC Calculator</h2>
-    <p>Please select a function:</p>
-    <button onclick="showMenu('calc1')">1. Divide by Players</button>
-    <button onclick="showMenu('calc2')">2. Divide by Percentage + Players</button>
-    <button onclick="showMenu('calc3')">3. Divide by Players with Bank</button>
+<!-- ===== Calculator ===== -->
+<div id="calcMainMenu" class="menu hidden">
+  <h2>SC Calculator</h2>
+  <div class="flex">
+    <button onclick="calcOption(1)">Divide By Amount Of Players</button>
+    <button onclick="calcOption(2)">Divide By Percentage & Players</button>
+    <button onclick="calcOption(3)">Divide By Amount With Bank</button>
     <button onclick="showMenu('launcherMenu')">Back</button>
   </div>
-
-  <div id="calc1" class="menu hidden">
-    <h3>Divide by Players</h3>
-    <input id="c1_total" type="number" placeholder="Enter Uaec Amount" />
-    <input id="c1_players" type="number" placeholder="Number of Players" />
-    <button onclick="doCalc1()">Calculate</button>
-    <pre id="c1_result"></pre>
-    <button onclick="showMenu('calcMainMenu')">Back</button>
-  </div>
-
-  <div id="calc2" class="menu hidden">
-    <h3>Divide by Percentage + Players</h3>
-    <input id="c2_total" type="number" placeholder="Enter Uaec Amount" />
-    <input id="c2_players" type="number" placeholder="Number of Players" />
-    <button onclick="setupCalc2()">Next</button>
-    <div id="c2_inputs"></div>
-    <button onclick="doCalc2()">Calculate</button>
-    <pre id="c2_result"></pre>
-    <button onclick="showMenu('calcMainMenu')">Back</button>
-  </div>
-
-  <div id="calc3" class="menu hidden">
-    <h3>Divide by Players with Bank</h3>
-    <input id="c3_total" type="number" placeholder="Enter Total Uaec" />
-    <input id="c3_tax" type="number" placeholder="Tax Percentage" />
-    <input id="c3_players" type="number" placeholder="Number of Players (excluding bank)" />
-    <label><input type="checkbox" id="c3_bankShare"> Bank Participates in Split</label><br>
-    <button onclick="doCalc3()">Calculate</button>
-    <pre id="c3_result"></pre>
-    <button onclick="showMenu('calcMainMenu')">Back</button>
-  </div>
+  <div id="calcContent" style="margin-top:20px;"></div>
+</div>
 
 <script>
-  // === General Menu Handling ===
-  function showMenu(id) {
-    document.querySelectorAll('.menu').forEach(m => m.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    updateConfirmStatus?.();
-  }
-
-  // === SC FREIGHT LOGIC ===
-  let shipments = Array.from({length: 10}, () => ({ploc:"NONE", type:"NONE", dloc:"NONE"}));
-  let shipmentCount = 0;
-  let currentShipment = 0;
-  let currentField = "";
+  // ===== State & Persistence =====
+  let itemTypeEnabled = true;
+  let uaecEnabled = false;
+  let tagEnabled = false;
   let confirmEnabled = true;
 
-  function beginShipments() {
-    const val = parseInt(document.getElementById("shipmentCount").value);
-    if (!val || val < 1 || val > 10) return alert("Invalid number of shipments.");
-    shipmentCount = val; currentShipment = 0; currentField = "ploc"; askNextField();
+  let shipments = [];
+  let currentShipment = 0;
+  let currentField = "";
+  let pendingValue = "";
+
+  const LS_KEYS = {
+    SHIP: 'sc_shipments',
+    SETTINGS: 'sc_settings',
+    CALC: 'sc_calc_state',
+    BTN_COLOR: 'sc_btn_color'
+  };
+
+  function saveShipments() {
+    localStorage.setItem(LS_KEYS.SHIP, JSON.stringify(shipments));
+  }
+  function loadShipments() {
+    const raw = localStorage.getItem(LS_KEYS.SHIP);
+    shipments = raw ? JSON.parse(raw) : [];
+  }
+  function saveSettings() {
+    const settings = { itemTypeEnabled, uaecEnabled, tagEnabled, confirmEnabled };
+    localStorage.setItem(LS_KEYS.SETTINGS, JSON.stringify(settings));
+  }
+  function loadSettings() {
+    const raw = localStorage.getItem(LS_KEYS.SETTINGS);
+    if(raw){
+      try{
+        const s = JSON.parse(raw);
+        if(typeof s.itemTypeEnabled === 'boolean') itemTypeEnabled = s.itemTypeEnabled;
+        if(typeof s.uaecEnabled === 'boolean') uaecEnabled = s.uaecEnabled;
+        if(typeof s.tagEnabled === 'boolean') tagEnabled = s.tagEnabled;
+        if(typeof s.confirmEnabled === 'boolean') confirmEnabled = s.confirmEnabled;
+      }catch(e){}
+    }
+    document.getElementById("itemTypeStatus").textContent = itemTypeEnabled?"enabled":"disabled";
+    document.getElementById("uaecStatus").textContent = uaecEnabled?"enabled":"disabled";
+    document.getElementById("tagStatus").textContent = tagEnabled?"enabled":"disabled";
+    document.getElementById("confirmStatus").textContent = confirmEnabled?"enabled":"disabled";
   }
 
-  function askNextField() {
-    const fields = {ploc:"Pickup Location", type:"Item Type", dloc:"Drop-Off Location"};
-    document.getElementById("shipmentStepTitle").textContent =
-      `Shipment ${currentShipment+1} • ${fields[currentField]}`;
+  // Button color persistence
+  function applyButtonColor(hex){
+    document.documentElement.style.setProperty('--btn-bg', hex);
+    localStorage.setItem(LS_KEYS.BTN_COLOR, hex);
+    document.getElementById('btnColor').value = hex;
+  }
+  function openMainSettings(){
+    document.getElementById('btnColor').value = localStorage.getItem(LS_KEYS.BTN_COLOR) || '#000000';
+    showMenu('mainSettingsMenu');
+  }
+  function resetButtonColor(){ applyButtonColor('#000000'); }
+
+  // ===== Freight: Step-by-step entry with inline confirm (no browser prompts) =====
+  function startShipments(){
+    shipments = [];
+    currentShipment = 0;
+    currentField = "ploc";
+    shipments.push({ploc:"", type:"", dloc:"", uaec:"", tag:""});
+    saveShipments();
+    askNextField();
+  }
+  function addNewShipment(){
+    currentShipment = shipments.length;
+    currentField = "ploc";
+    shipments.push({ploc:"", type:"", dloc:"", uaec:"", tag:""});
+    saveShipments();
+    askNextField();
+  }
+  function askNextField(){
+    const fields = { ploc:"Pickup Location", type:"Item Type", dloc:"Drop-Off Location", uaec:"UAEc Amount", tag:"TAG" };
+    document.getElementById("shipmentStepTitle").textContent = `Shipment ${currentShipment+1} • ${fields[currentField]}`;
     document.getElementById("shipmentInputField").value = "";
+    hideConfirm();
     showMenu("shipmentInput");
   }
-
-  function saveShipmentValue() {
-    let value = document.getElementById("shipmentInputField").value.trim();
-    if (!value) { alert("Please enter a value."); return; }
-    if (confirmEnabled && !confirm(`Is this correct? ${value}`)) return;
-    shipments[currentShipment][currentField] = value;
-    currentField = currentField === "ploc" ? "type" : currentField === "type" ? "dloc" : "ploc";
-    if (currentField === "ploc") currentShipment++;
-    if (currentShipment < shipmentCount) askNextField(); else renderViewer();
+  function handleEntryNext(){
+    const val = document.getElementById("shipmentInputField").value.trim();
+    const msg = document.getElementById("shipmentMsg");
+    if(!val){
+      msg.textContent = "Please enter a value.";
+      msg.classList.remove("hidden");
+      return;
+    }
+    msg.classList.add("hidden");
+    if(confirmEnabled){
+      pendingValue = val;
+      document.getElementById("confirmText").textContent = `Is “${val}” correct?`;
+      document.getElementById("confirmBlock").classList.remove("hidden");
+      document.getElementById("entryButtons").classList.add("hidden");
+    }else{
+      finalizeSave(val);
+    }
+  }
+  function confirmEntry(yes){
+    if(yes){
+      finalizeSave(pendingValue);
+    }else{
+      hideConfirm();
+      document.getElementById("shipmentInputField").focus();
+    }
+  }
+  function hideConfirm(){
+    document.getElementById("confirmBlock").classList.add("hidden");
+    document.getElementById("entryButtons").classList.remove("hidden");
+    document.getElementById("shipmentMsg").classList.add("hidden");
+  }
+  function finalizeSave(val){
+    shipments[currentShipment][currentField] = val;
+    saveShipments();
+    if(currentField==="ploc") currentField=itemTypeEnabled?"type":"dloc";
+    else if(currentField==="type") currentField="dloc";
+    else if(currentField==="dloc") currentField=uaecEnabled?"uaec":(tagEnabled?"tag":"done");
+    else if(currentField==="uaec") currentField=tagEnabled?"tag":"done";
+    else if(currentField==="tag") currentField="done";
+    if(currentField==="done"){ addNewShipment(); return; }
+    askNextField();
   }
 
-  function sortShipments(data, criteria) {
-    return [...data].sort((a,b)=> {
-      switch(criteria){
-        case "ploc": return a.ploc.localeCompare(b.ploc);
-        case "dloc": return a.dloc.localeCompare(b.dloc);
-        case "dloc_ploc": return a.dloc.localeCompare(b.dloc)||a.ploc.localeCompare(b.ploc);
-        case "ploc_dloc": return a.ploc.localeCompare(b.ploc)||a.dloc.localeCompare(b.dloc);
-        default: return 0;
-      }
-    });
-  }
-
-  function renderViewer() {
+  // ===== Viewer (inline editing; no confirms; autosave) =====
+  function renderViewer(){
     const tbody = document.getElementById("viewerTable");
+    const thead = document.getElementById("viewerHead");
+    thead.innerHTML = `<th>#</th><th>Pickup</th>${itemTypeEnabled?"<th>Type</th>":""}<th>Drop</th>${uaecEnabled?"<th>UAEc</th>":""}${tagEnabled?"<th>TAG</th>":""}<th>Actions</th>`;
     tbody.innerHTML = "";
-    const sortCriteria = document.getElementById("sortSelect").value;
-    sortShipments(shipments.slice(0, shipmentCount), sortCriteria)
-      .forEach(s => tbody.innerHTML += `<tr><td>${s.ploc}</td><td>${s.type}</td><td>${s.dloc}</td></tr>`);
+
+    const sortType = document.getElementById("sortSelect").value;
+    const decorated = shipments.map((s,idx)=>({s,idx}));
+    if(sortType==="ploc") decorated.sort((a,b)=>a.s.ploc.localeCompare(b.s.ploc));
+    else if(sortType==="dloc") decorated.sort((a,b)=>a.s.dloc.localeCompare(b.s.dloc));
+    else if(sortType==="ploc_dloc") decorated.sort((a,b)=>a.s.ploc.localeCompare(b.s.ploc)||a.s.dloc.localeCompare(b.s.dloc));
+    else if(sortType==="dloc_ploc") decorated.sort((a,b)=>a.s.dloc.localeCompare(b.s.dloc)||a.s.ploc.localeCompare(b.s.ploc));
+
+    decorated.forEach((row,visIndex)=>{
+      const i = row.idx;
+      const s = row.s;
+      const cells = [];
+      cells.push(`<td>${visIndex+1}</td>`);
+      cells.push(cellEditable("ploc", i, s.ploc));
+      if(itemTypeEnabled) cells.push(cellEditable("type", i, s.type));
+      cells.push(cellEditable("dloc", i, s.dloc));
+      if(uaecEnabled) cells.push(cellEditable("uaec", i, s.uaec));
+      if(tagEnabled) cells.push(cellEditable("tag", i, s.tag));
+      cells.push(`<td class="row-actions">
+                    <button id="editBtn-${i}" onclick="rowEdit(${i})">Edit</button>
+                    <button class="hidden" id="saveBtn-${i}" onclick="rowSave(${i})">Save</button>
+					<button class="danger" onclick="rowDelete(${i})">Delete</button>
+                  </td>`);
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-index", i);
+      tr.innerHTML = cells.join("");
+      tbody.appendChild(tr);
+    });
     showMenu("viewer");
   }
+  function cellEditable(field, i, value){
+    return `<td>
+      <span id="${field}-${i}">${escapeHTML(value||"")}</span>
+      <input class="hidden edit-input" id="edit-${field}-${i}" value="${escapeAttr(value||"")}">
+    </td>`;
+  }
+  function rowEdit(i){
+    ["ploc","type","dloc","uaec","tag"].forEach(f=>{
+      const span = document.getElementById(`${f}-${i}`);
+      const input = document.getElementById(`edit-${f}-${i}`);
+      if(span && input){ span.classList.add("hidden"); input.classList.remove("hidden"); }
+    });
+    toggleRowButtons(i, true);
+  }
+  function rowSave(i){
+    ["ploc","type","dloc","uaec","tag"].forEach(f=>{
+      const span = document.getElementById(`${f}-${i}`);
+      const input = document.getElementById(`edit-${f}-${i}`);
+      if(span && input && !input.classList.contains("hidden")){
+        const val = input.value.trim();
+        shipments[i][f] = val; // no confirm while editing in viewer
+        span.textContent = val;
+        span.classList.remove("hidden");
+        input.classList.add("hidden");
+      }
+    });
+    saveShipments();
+    toggleRowButtons(i, false);
+  }
+  function rowDelete(i){
+  if(confirm(`Delete shipment #${i+1}?`)){
+    shipments.splice(i, 1); // remove from array
+    saveShipments();
+    renderViewer(); // refresh table
+  }
+}
+  function toggleRowButtons(i, editing){
+    document.getElementById(`editBtn-${i}`)?.classList.toggle("hidden", editing);
+    document.getElementById(`saveBtn-${i}`)?.classList.toggle("hidden", !editing);
+  }
+  function clearShipments() {
+  if (confirm("Are you sure you want to clear all shipments? This cannot be undone.")) {
+    shipments = [];       // clear the array
+    saveShipments();      // save the empty array to localStorage
+    renderViewer();       // refresh the viewer table
+  }
+}
 
-  function editShipment() {
-    const index = parseInt(prompt("Enter shipment number (1-10):"))-1;
-    if (index>=0 && index<10){
-      ["ploc","type","dloc"].forEach(field=>{
-        let val = prompt(`Editing shipment ${index+1} • ${field}`, shipments[index][field]);
-        if(val && (!confirmEnabled || confirm(`Is this correct? ${val}`))) shipments[index][field]=val;
-      });
-      renderViewer();
+  // ===== Freight Settings toggles =====
+  function toggleItemType(){ itemTypeEnabled=!itemTypeEnabled; document.getElementById("itemTypeStatus").textContent=itemTypeEnabled?"enabled":"disabled"; saveSettings(); }
+  function toggleUAEc(){ uaecEnabled=!uaecEnabled; document.getElementById("uaecStatus").textContent=uaecEnabled?"enabled":"disabled"; saveSettings(); }
+  function toggleTag(){ tagEnabled=!tagEnabled; document.getElementById("tagStatus").textContent=tagEnabled?"enabled":"disabled"; saveSettings(); }
+  function toggleConfirm(){ confirmEnabled=!confirmEnabled; document.getElementById("confirmStatus").textContent=confirmEnabled?"enabled":"disabled"; saveSettings(); }
+
+  // ===== Calculator (HTML version of your batch) =====
+  function calcOption(opt){
+    const content = document.getElementById("calcContent");
+    content.innerHTML = "";
+    if(opt===1){
+      content.innerHTML = `
+        <div class="stack">
+          <div class="flex">
+            <label>Total Uaec:</label><input id="calcNumber" type="number" min="0" step="1">
+            <label>Players:</label><input id="calcDiv" type="number" min="1" step="1">
+            <button onclick="calc1()">Calculate</button>
+          </div>
+          <pre id="calcResult" class="left"></pre>
+          <div id="calcMsg" class="inline-error hidden"></div>
+        </div>`;
+    }
+    else if(opt===2){
+      content.innerHTML = `
+        <div class="stack">
+          <div class="flex">
+            <label>Total Uaec:</label><input id="calcTotal" type="number" min="0" step="1">
+            <label>Players:</label><input id="calcPlayers" type="number" min="1" step="1" oninput="buildPercentInputs()">
+          </div>
+          <div id="percentInputs" class="stack"></div>
+          <div class="flex"><button onclick="calc2()">Calculate</button></div>
+          <pre id="calcResult" class="left"></pre>
+          <div id="calcMsg" class="inline-error hidden"></div>
+        </div>`;
+    }
+    else if(opt===3){
+      content.innerHTML = `
+        <div class="stack">
+          <div class="flex">
+            <label>Total Uaec:</label><input id="calcTotal3" type="number" min="0" step="1">
+            <label>Tax %:</label><input id="calcTax" type="number" min="0" step="1">
+            <label>Players (excluding bank):</label><input id="calcPlayers3" type="number" min="1" step="1">
+          </div>
+          <div class="flex">
+            <span>Did the bank participate?</span>
+            <label><input type="radio" name="bankPlayed" value="y" checked> Yes</label>
+            <label><input type="radio" name="bankPlayed" value="n"> No</label>
+          </div>
+          <div class="flex"><button onclick="calc3()">Calculate</button></div>
+          <pre id="calcResult" class="left"></pre>
+          <div id="calcMsg" class="inline-error hidden"></div>
+        </div>`;
+    }
+    // restore calc state if present
+    const saved = localStorage.getItem(LS_KEYS.CALC);
+    if(saved){
+      try{
+        const st = JSON.parse(saved);
+        for(const k in st){
+          const el = document.getElementById(k);
+          if(el){ el.value = st[k]; }
+        }
+        if(document.getElementById('calcPlayers') && st.calcPlayers){
+          buildPercentInputs(st); // prebuild with saved data
+        }
+      }catch(e){}
     }
   }
-
-  function toggleConfirm(){ confirmEnabled=!confirmEnabled; updateConfirmStatus(); }
-  function updateConfirmStatus(){ const el=document.getElementById("confirmStatus"); if(el) el.textContent=confirmEnabled?"enabled":"disabled"; }
-  function setAllBurger(){ shipments.forEach(s=>s.ploc=s.type=s.dloc="BURGER"); renderViewer(); }
-  function resetAll(){ shipments.forEach(s=>s.ploc=s.type=s.dloc="NONE"); renderViewer(); }
-
-  // === SC CALCULATOR LOGIC ===
-  function doCalc1() {
-    const number=parseInt(document.getElementById("c1_total").value);
-    const players=parseInt(document.getElementById("c1_players").value);
-    if(!number||!players) return alert("Invalid input");
-    document.getElementById("c1_result").textContent=`${number} Uaec ÷ ${players} Players = ${Math.floor(number/players)} Uaec each`;
-  }
-
-  function setupCalc2() {
-    const total=parseInt(document.getElementById("c2_total").value);
-    const players=parseInt(document.getElementById("c2_players").value);
-    if(!total||!players) return alert("Invalid input");
-    const container=document.getElementById("c2_inputs");
-    container.innerHTML="";
-    for(let i=1;i<=players;i++) container.innerHTML+=`<input id="c2_p${i}" type="number" placeholder="Player ${i} %">`;
-  }
-
-  function doCalc2() {
-    const total=parseInt(document.getElementById("c2_total").value);
-    const players=parseInt(document.getElementById("c2_players").value);
-    let totalPercent=0, outputs="";
+  function buildPercentInputs(savedState){
+    const container = document.getElementById("percentInputs");
+    if(!container) return;
+    container.innerHTML = "";
+    const players = Number(document.getElementById("calcPlayers").value || 0);
     for(let i=1;i<=players;i++){
-      const p=parseInt(document.getElementById(`c2_p${i}`).value)||0;
-      totalPercent+=p;
-      outputs+=`Player ${i} gets: ${Math.floor(total*p/100)} Uaec (${p}%)\n`;
+      const val = savedState ? (savedState[`p${i}`] ?? "") : "";
+      const row = document.createElement("div");
+      row.className = "flex";
+      row.innerHTML = `<label>Player ${i} %:</label><input id="p${i}" type="number" min="0" step="1" value="${escapeAttr(val)}">`;
+      container.appendChild(row);
     }
-    if(totalPercent>100) outputs="WARNING: Total Percentage Exceeds 100%!";
-    document.getElementById("c2_result").textContent=outputs;
+  }
+  function persistCalcState(){
+    const ids = ["calcNumber","calcDiv","calcTotal","calcPlayers","calcTotal3","calcTax","calcPlayers3"];
+    const st = {};
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) st[id] = el.value;
+    });
+    // also percentages if present
+    const playersEl = document.getElementById("calcPlayers");
+    if(playersEl){
+      const n = Number(playersEl.value||0);
+      for(let i=1;i<=n;i++){
+        const el = document.getElementById(`p${i}`);
+        if(el) st[`p${i}`] = el.value;
+      }
+    }
+    localStorage.setItem(LS_KEYS.CALC, JSON.stringify(st));
+  }
+  function showCalcMessage(msg, ok=false){
+    const el = document.getElementById("calcMsg");
+    if(!el) return;
+    el.textContent = msg;
+    el.classList.remove("hidden");
+    el.classList.toggle("inline-error", !ok);
+    el.classList.toggle("inline-ok", ok);
+  }
+  function clearCalcMessage(){
+    const el = document.getElementById("calcMsg");
+    if(el){ el.classList.add("hidden"); }
   }
 
-  function doCalc3() {
-    const total=parseInt(document.getElementById("c3_total").value);
-    const taxRate=parseInt(document.getElementById("c3_tax").value);
-    const players=parseInt(document.getElementById("c3_players").value);
-    const bankShare=document.getElementById("c3_bankShare").checked;
-    if(!total||taxRate<0||players<1) return alert("Invalid input");
-    const taxAmount=Math.floor(total*taxRate/100);
-    const remaining=total-taxAmount;
-    const recipients=bankShare?players+1:players;
-    const individual=Math.floor(remaining/recipients);
-    const leftover=remaining%recipients;
-    const bankTotal=bankShare?taxAmount+individual:taxAmount;
-    document.getElementById("c3_result").textContent=
-      `===== Results =====\nTotal Uaec: ${total}\nUaec to Bank: ${taxAmount}\nBank Total (Tax + Share): ${bankTotal}\nRemaining to Split: ${remaining}\nTotal Recipients: ${recipients}\nEach Player Gets: ${individual}\nLeftover: ${leftover}`;
+  // CALC 1
+  function calc1(){
+    clearCalcMessage();
+    const n = Number(document.getElementById("calcNumber").value);
+    const d = Number(document.getElementById("calcDiv").value);
+    if(!d){ showCalcMessage("Players must be at least 1."); return; }
+    const result = Math.floor(n/d);
+    document.getElementById("calcResult").textContent =
+      `${n} Uaec / ${d} players = ${result} Uaec per player`;
+    persistCalcState();
+  }
+  // CALC 2 (percentages via inline inputs)
+  function calc2(){
+    clearCalcMessage();
+    const total = Number(document.getElementById("calcTotal").value);
+    const players = Number(document.getElementById("calcPlayers").value);
+    if(players<1){ showCalcMessage("Players must be at least 1."); return; }
+    let sum = 0;
+    const lines = [];
+    for(let i=1;i<=players;i++){
+      const v = Number(document.getElementById(`p${i}`).value||0);
+      sum += v;
+      const amount = Math.floor(total * v / 100);
+      lines.push(`Player ${i} gets: ${amount}`);
+    }
+    if(sum>100){ showCalcMessage(`Total percentage exceeds 100% (=${sum}%).`); return; }
+    document.getElementById("calcResult").textContent = `Percentages: ${sum}%\n` + lines.join("\n");
+    persistCalcState();
+  }
+  // CALC 3 (bank tax + optional participation)
+  function calc3(){
+    clearCalcMessage();
+    const total = Number(document.getElementById("calcTotal3").value);
+    const tax = Number(document.getElementById("calcTax").value);
+    const players = Number(document.getElementById("calcPlayers3").value);
+    const bank = (document.querySelector('input[name="bankPlayed"]:checked')?.value || "y") === "y";
+
+    const taxAmount = Math.floor(total * tax / 100);
+    const remaining = total - taxAmount;
+    const recipients = bank ? players + 1 : players;
+    if(recipients <= 0){ showCalcMessage("Players must be at least 1."); return; }
+
+    const share = Math.floor(remaining / recipients);
+    const leftover = remaining % recipients;
+    const bankTotal = bank ? taxAmount + share : taxAmount;
+
+    document.getElementById("calcResult").textContent =
+`===== Results =====
+Total Uaec:               ${total}
+Uaec to Bank (tax):       ${taxAmount}
+Bank Total (Tax + Share): ${bankTotal}
+Remaining to Split:       ${remaining}
+Total Recipients:         ${recipients}
+Each Player Gets:         ${share}
+Leftover:                 ${leftover}`;
+    persistCalcState();
   }
 
-  // Initialize
-  showMenu("launcherMenu");
+  // ===== Menu & misc =====
+  function showMenu(id){
+    document.querySelectorAll('.menu').forEach(m => m.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function updateFullscreenNote(){
+    document.getElementById("fullscreenNote").style.display = document.fullscreenElement ? "none" : "block";
+  }
+  document.addEventListener("fullscreenchange", updateFullscreenNote);
+  updateFullscreenNote();
+
+  // ===== Utilities =====
+  function escapeHTML(str){ return String(str).replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
+  function escapeAttr(str){ return escapeHTML(str).replace(/"/g,'&quot;'); }
+
+  // ===== Init =====
+  (function init(){
+    loadSettings();
+    loadShipments();
+
+    // Apply saved button color
+    const savedColor = localStorage.getItem(LS_KEYS.BTN_COLOR) || '#000000';
+    applyButtonColor(savedColor);
+    document.getElementById('btnColor').addEventListener('input', (e)=>applyButtonColor(e.target.value));
+
+    // If there are shipments, go to viewer; else launcher
+    if(shipments.length){ renderViewer(); } else { showMenu('launcherMenu'); }
+  })();
 </script>
-
 </body>
 </html>
